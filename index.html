@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ferramentas JSON - Consolidação e Extração</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --success-color: #27ae60;
+      --warning-color: #f39c12;
+      --danger-color: #e74c3c;
+      --light-color: #ecf0f1;
+      --dark-color: #34495e;
+    }
+    
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f7fa;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 500;
+      border-bottom: 2px solid var(--light-color);
+      padding-bottom: 15px;
+    }
+    
+    h2 {
+      color: var(--dark-color);
+      text-align: center;
+      margin-top: 0;
+      font-weight: 400;
+    }
+    
+    h3 {
+      color: var(--dark-color);
+      margin-top: 0;
+      font-weight: 400;
+    }
+    
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+      gap: 15px;
+    }
+    
+    .nav-button {
+      padding: 12px 25px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .nav-button:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .nav-button i {
+      margin-right: 8px;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: 'Consolas', monospace;
+      margin-bottom: 20px;
+      resize: vertical;
+      transition: border 0.3s;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+    
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    button {
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.3s;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button i {
+      font-size: 16px;
+    }
+    
+    .btn-success { background-color: var(--success-color); }
+    .btn-success:hover { background-color: #219653; }
+    
+    .btn-info { background-color: var(--secondary-color); }
+    .btn-info:hover { background-color: #2980b9; }
+    
+    .btn-warning { background-color: var(--warning-color); }
+    .btn-warning:hover { background-color: #e67e22; }
+    
+    .btn-danger { background-color: var(--danger-color); }
+    .btn-danger:hover { background-color: #c0392b; }
+    
+    .result-container {
+      margin-top: 30px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px 15px;
+      text-align: left;
+    }
+    
+    th {
+      background-color: var(--primary-color);
+      color: white;
+      position: sticky;
+      top: 0;
+      font-weight: 500;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    
+    tr:hover {
+      background-color: #e9f7fe;
+    }
+    
+    .stats-container {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .stat-card {
+      background-color: white;
+      border-radius: 6px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      flex: 1;
+      min-width: 200px;
+      border-left: 4px solid var(--secondary-color);
+    }
+    
+    .stat-card h4 {
+      margin: 0 0 10px 0;
+      color: var(--dark-color);
+      font-weight: 500;
+    }
+    
+    .stat-card p {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 300;
+      color: var(--primary-color);
+    }
+    
+    .export-options {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    select {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      background-color: white;
+      transition: all 0.3s;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+    }
+    
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 200px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -100px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+    }
+    
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      background-color: var(--success-color);
+      color: white;
+      border-radius: 4px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transform: translateX(200%);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .instructions {
+      background-color: #f8f9fa;
+      border-left: 4px solid var(--secondary-color);
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    .instructions h4 {
+      margin-top: 0;
+      color: var(--primary-color);
+    }
+    
+    .instructions ul {
+      padding-left: 20px;
+    }
+    
+    .instructions li {
+      margin-bottom: 8px;
+    }
+    
+    .page {
+      display: none;
+    }
+    
+    .page.active {
+      display: block;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+      
+      .nav-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .nav-button {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1><i class="fas fa-code"></i> Ferramentas JSON</h1>
+    <h2 id="page-title">Consolidação de JSON</h2>
+    
+    <div class="nav-buttons">
+      <a href="#" class="nav-button" id="consolidar-btn"><i class="fas fa-object-group"></i> Consolidar JSON</a>
+      <a href="#" class="nav-button" id="extrair-btn"><i class="fas fa-table"></i> Extrair Dados</a>
+    </div>
+
+    <!-- Página de Consolidar JSON -->
+    <div id="consolidar-page" class="page active">
+      <div class="instructions">
+        <h4><i class="fas fa-info-circle"></i> Como usar:</h4>
+        <ul>
+          <li>Cole múltiplos objetos JSON, um por linha, no campo abaixo</li>
+          <li>O sistema irá consolidar todos em um único JSON unificado</li>
+          <li>Os arrays <code>ticketUuidList</code> e <code>idClienteList</code> serão combinados</li>
+          <li>Os valores de <code>retornaXML</code> e <code>retornaPDF</code> serão mantidos do último JSON</li>
+        </ul>
+      </div>
+      
+      <h3><i class="fas fa-paste"></i> Cole seus JSONs individuais:</h3>
+      <textarea id="inputJsonTransform" placeholder="Exemplo:
+{ \"ticketUuidList\": [\"123\"], \"idClienteList\": [\"456\"], \"retornaXML\": \"true\" }
+{ \"ticketUuidList\": [\"789\"], \"idClienteList\": [\"101\"], \"retornaPDF\": \"false\" }"></textarea>
+      
+      <div class="button-group">
+        <button id="transformBtn" class="btn-success"><i class="fas fa-magic"></i> Consolidar JSON</button>
+        <button class="btn-danger" onclick="clearTransform()"><i class="fas fa-trash-alt"></i> Limpar</button>
+      </div>
+      
+      <div class="result-container" id="transformResult" style="display: none;">
+        <h3><i class="fas fa-file-code"></i> Resultado Consolidado:</h3>
+        <textarea id="outputJsonTransform" readonly></textarea>
+        <div class="button-group">
+          <button class="btn-info" onclick="copyText('outputJsonTransform')"><i class="fas fa-copy"></i> Copiar JSON</button>
+          <button class="btn-warning" onclick="downloadJson()"><i class="fas fa-download"></i> Baixar JSON</button>
+        </div>
+      </div>
+    </div>
+
+     <!-- Página de Extrair Dados -->
+    <div id="extrair-page" class="page">
+      <div class="instructions">
+        <h4><i class="fas fa-info-circle"></i> Como usar:</h4>
+        <ul>
+          <li>Cole um JSON consolidado no campo abaixo OU carregue um arquivo JSON/TXT</li>
+          <li>O sistema irá extrair os dados da propriedade <code>nfse</code></li>
+          <li>Os resultados serão exibidos em uma tabela organizada</li>
+          <li>Você pode exportar os dados em diferentes formatos</li>
+        </ul>
+      </div>
+      
+      <h3><i class="fas fa-paste"></i> Cole o JSON consolidado ou carregue um arquivo:</h3>
+      
+      <div class="button-group" style="margin-bottom: 15px;">
+        <button id="loadFileBtn" class="btn-info"><i class="fas fa-file-upload"></i> Carregar Arquivo</button>
+        <input type="file" id="fileInput" accept=".json,.txt" style="display: none;">
+      </div>
+      
+      <textarea id="inputJsonExtract" placeholder="Exemplo:
+{
+  \"nfse\": [
+    {
+      \"status\": \"NEGADA\",
+      \"chaveAcesso\": \"1234\",
+      \"nrRps\": \"5678\",
+      \"motivo\": \"Erro na emissão\",
+      \"idCliente\": \"901\",
+      \"ticketUuid\": \"abcd\"
+    }
+  ]
+}"></textarea>
+      
+      <div class="button-group">
+        <button id="extractBtn" class="btn-success"><i class="fas fa-table"></i> Extrair Dados</button>
+        <button class="btn-danger" onclick="clearExtract()"><i class="fas fa-trash-alt"></i> Limpar</button>
+      </div>
+      
+      <div class="result-container">
+        <h3><i class="fas fa-chart-bar"></i> Dados Extraídos:</h3>
+        <div id="resultStats" class="stats-container"></div>
+        <div id="resultTable"></div>
+        
+        <div class="export-options">
+          <button class="btn-info" id="copyTableBtn"><i class="fas fa-copy"></i> Copiar Tabela</button>
+          <button class="btn-warning" id="exportCsvBtn"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+          
+          <div class="tooltip">
+            <label for="separatorSelect"><i class="fas fa-slash"></i> Separador:</label>
+            <select id="separatorSelect">
+              <option value=",">Vírgula (,)</option>
+              <option value=";">Ponto e vírgula (;)</option>
+              <option value="|">Pipe (|)</option>
+              <option value="\t">Tabulação (\t)</option>
+            </select>
+            <span class="tooltiptext">Escolha o separador para arquivos de texto</span>
+          </div>
+          
+          <button class="btn-warning" id="exportTxtBtn"><i class="fas fa-file-alt"></i> Exportar TXT</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="notification" class="notification"></div>
+
+<script>
+  // Mostrar notificação
+  function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = 'notification show';
+    
+    // Cor baseada no tipo
+    if (type === 'success') {
+      notification.style.backgroundColor = '#27ae60';
+    } else if (type === 'error') {
+      notification.style.backgroundColor = '#e74c3c';
+    } else if (type === 'info') {
+      notification.style.backgroundColor = '#3498db';
+    }
+    
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, 3000);
+  }
+
+  // Navegação entre páginas
+  document.getElementById('consolidar-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('page-title').textContent = 'Consolidação de JSON';
+    document.getElementById('consolidar-page').classList.add('active');
+    document.getElementById('extrair-page').classList.remove('active');
+  });
+
+  document.getElementById('extrair-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('page-title').textContent = 'Extração de Dados de JSON';
+    document.getElementById('extrair-page').classList.add('active');
+    document.getElementById('consolidar-page').classList.remove('active');
+  });
+
+  function copyText(elementId) {
+    const textarea = document.getElementById(elementId);
+    textarea.select();
+    document.execCommand('copy');
+    showNotification('Texto copiado para a área de transferência!');
+  }
+
+  // Transformar JSON
+  document.getElementById('transformBtn').addEventListener('click', function() {
+    const inputText = document.getElementById('inputJsonTransform').value.trim();
+    if (!inputText) {
+      showNotification('Por favor, cole alguns JSONs.', 'error');
+      return;
+    }
+    
+    try {
+      const jsonLines = inputText.split('\n').filter(line => line.trim() !== '');
+      const consolidated = { 
+        ticketUuidList: [], 
+        idClienteList: [], 
+        retornaXML: "true", 
+        retornaPDF: "false" 
+      };
+      
+      let processedCount = 0;
+      
+      jsonLines.forEach(line => {
+        try {
+          const obj = JSON.parse(line.trim());
+          if (obj.ticketUuidList) consolidated.ticketUuidList.push(...obj.ticketUuidList);
+          if (obj.idClienteList) consolidated.idClienteList.push(...obj.idClienteList);
+          if (obj.retornaXML !== undefined) consolidated.retornaXML = obj.retornaXML.toString();
+          if (obj.retornaPDF !== undefined) consolidated.retornaPDF = obj.retornaPDF.toString();
+          processedCount++;
+        } catch (e) {
+          console.error('Erro ao processar linha:', line, e);
+        }
+      });
+      
+      const resultArea = document.getElementById('outputJsonTransform');
+      resultArea.value = JSON.stringify(consolidated, null, 2);
+      document.getElementById('transformResult').style.display = 'block';
+      
+      showNotification(`${processedCount} JSONs consolidados com sucesso! ${jsonLines.length - processedCount} com erro.`);
+    } catch (e) {
+      showNotification('Erro ao processar JSONs: ' + e.message, 'error');
+      console.error(e);
+    }
+  });
+
+  function downloadJson() {
+    const content = document.getElementById('outputJsonTransform').value;
+    if (!content) {
+      showNotification('Nenhum JSON para baixar.', 'error');
+      return;
+    }
+    
+    const blob = new Blob([content], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'json_consolidado.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Download do JSON iniciado!');
+  }
+
+  function clearTransform() {
+    document.getElementById('inputJsonTransform').value = '';
+    document.getElementById('outputJsonTransform').value = '';
+    document.getElementById('transformResult').style.display = 'none';
+    showNotification('Campos limpos com sucesso!', 'info');
+  }
+
+  // Extrair Dados
+  document.getElementById('extractBtn').addEventListener('click', function() {
+    const inputText = document.getElementById('inputJsonExtract').value.trim();
+    if (!inputText) {
+      showNotification('Por favor, cole o JSON.', 'error');
+      return;
+    }
+    
+    try {
+      const data = JSON.parse(inputText);
+      const nfseList = data.nfse || [];
+      
+      if (nfseList.length === 0) {
+        showNotification('O JSON não contém dados na propriedade "nfse".', 'info');
+        document.getElementById('resultStats').innerHTML = '';
+        document.getElementById('resultTable').innerHTML = '';
+        return;
+      }
+      
+      let tableHtml = `<table><thead><tr>
+        <th>Status</th>
+        <th>Chave de Acesso</th>
+        <th>Número RPS</th>
+        <th>Motivo</th>
+        <th>ID Cliente</th>
+        <th>Ticket UUID</th>
+      </tr></thead><tbody>`;
+      
+      let negadas = 0, naoLocalizadas = 0, outras = 0;
+      const statusCounts = {};
+
+      nfseList.forEach(item => {
+        const status = item.status || 'N/A';
+        const chave = item.chaveAcesso || 'N/A';
+        const rps = item.nrRps || 'N/A';
+        const motivo = item.motivo ? item.motivo.replace(/\r\n/g, ' ').substring(0, 100) + (item.motivo.length > 100 ? '...' : '') : 'N/A';
+        const cliente = item.idCliente || 'N/A';
+        const ticket = item.ticketUuid || 'N/A';
+        
+        // Contagem de status
+        statusCounts[status] = (statusCounts[status] || 0) + 1;
+        
+        if (status === 'NEGADA') negadas++;
+        else if (status === 'NAO_LOCALIZADA') naoLocalizadas++;
+        else outras++;
+        
+        // Adiciona classe CSS baseada no status para colorir a linha
+        let rowClass = '';
+        if (status === 'NEGADA') rowClass = 'class="negada"';
+        else if (status === 'NAO_LOCALIZADA') rowClass = 'class="nao-localizada"';
+        
+        tableHtml += `<tr ${rowClass}>
+          <td>${status}</td>
+          <td>${chave}</td>
+          <td>${rps}</td>
+          <td title="${item.motivo || ''}">${motivo}</td>
+          <td>${cliente}</td>
+          <td>${ticket}</td>
+        </tr>`;
+      });
+      
+      tableHtml += `</tbody></table>`;
+      
+      // Adiciona estilo para colorir as linhas
+      const style = document.createElement('style');
+      style.textContent = `
+        tr.negada { background-color: #ffebee !important; }
+        tr.nao-localizada { background-color: #fff8e1 !important; }
+        tr:hover { background-color: #e3f2fd !important; }
+      `;
+      document.head.appendChild(style);
+      
+      document.getElementById('resultTable').innerHTML = tableHtml;
+      
+      // Estatísticas detalhadas
+      let statsHtml = `
+        <div class="stat-card">
+          <h4>Total</h4>
+          <p>${nfseList.length}</p>
+        </div>
+        <div class="stat-card">
+          <h4>NEGADA</h4>
+          <p>${negadas}</p>
+        </div>
+        <div class="stat-card">
+          <h4>NÃO LOCALIZADA</h4>
+          <p>${naoLocalizadas}</p>
+        </div>
+        <div class="stat-card">
+          <h4>OUTRAS</h4>
+          <p>${outras}</p>
+        </div>
+      `;
+      
+      document.getElementById('resultStats').innerHTML = statsHtml;
+      showNotification(`${nfseList.length} registros extraídos com sucesso!`);
+    } catch (e) {
+      showNotification('Erro ao processar JSON: ' + e.message, 'error');
+      console.error(e);
+    }
+  });
+
+  function clearExtract() {
+    document.getElementById('inputJsonExtract').value = '';
+    document.getElementById('resultStats').innerHTML = '';
+    document.getElementById('resultTable').innerHTML = '';
+    showNotification('Campos limpos com sucesso!', 'info');
+  }
+
+  document.getElementById('copyTableBtn').addEventListener('click', function() {
+    const table = document.getElementById('resultTable').querySelector('table');
+    if (!table) { 
+      showNotification('Nenhuma tabela para copiar.', 'error');
+      return; 
+    }
+    
+    let textToCopy = '';
+    table.querySelectorAll('tr').forEach(row => {
+      const cells = row.querySelectorAll('th, td');
+      textToCopy += Array.from(cells).map(cell => cell.textContent).join('\t') + '\n';
+    });
+    
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => showNotification('Tabela copiada para a área de transferência!'))
+      .catch(err => {
+        console.error(err);
+        showNotification('Erro ao copiar tabela.', 'error');
+      });
+  });
+
+  document.getElementById('exportCsvBtn').addEventListener('click', function() {
+    exportTableToFile(',', 'dados_nfse.csv');
+  });
+
+  document.getElementById('exportTxtBtn').addEventListener('click', function() {
+    const separator = document.getElementById('separatorSelect').value;
+    exportTableToFile(separator, 'dados_nfse.txt');
+  });
+
+  function exportTableToFile(separator, filename) {
+    const table = document.getElementById('resultTable').querySelector('table');
+    if (!table) { 
+      showNotification('Nenhuma tabela para exportar.', 'error');
+      return; 
+    }
+    
+    let content = '';
+    table.querySelectorAll('tr').forEach(row => {
+      const cells = row.querySelectorAll('th, td');
+      content += Array.from(cells).map(cell => {
+        let text = cell.textContent.replace(/"/g, '""');
+        return text.includes(separator) || text.includes('"') ? `"${text}"` : text;
+      }).join(separator) + '\r\n';
+    });
+    
+    const blob = new Blob(["\uFEFF" + content], { type: 'text/plain;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; 
+    link.download = filename; 
+    link.style.display = 'none';
+    document.body.appendChild(link); 
+    link.click(); 
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showNotification(`Arquivo ${filename} baixado com sucesso!`);
+  }
+  // Adicionar funcionalidade de carregar arquivo
+  document.getElementById('loadFileBtn').addEventListener('click', function() {
+    document.getElementById('fileInput').click();
+  });
+
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const content = e.target.result;
+        // Tenta parsear como JSON para validar
+        JSON.parse(content);
+        document.getElementById('inputJsonExtract').value = content;
+        showNotification('Arquivo carregado com sucesso!');
+      } catch (error) {
+        showNotification('Erro: O arquivo não contém um JSON válido.', 'error');
+      }
+    };
+    reader.onerror = function() {
+      showNotification('Erro ao ler o arquivo.', 'error');
+    };
+    
+    if (file.name.endsWith('.json') || file.name.endsWith('.txt')) {
+      reader.readAsText(file);
+    } else {
+      showNotification('Por favor, selecione um arquivo .json ou .txt', 'error');
+    }
+  });
+</script>
+
+</body>
+</html>
