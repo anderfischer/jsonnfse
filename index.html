@@ -188,6 +188,11 @@
       background-color: #e9f7fe;
     }
     
+    /* Estilos para os status */
+    tr.autorizada { background-color: #e8f5e9 !important; }
+    tr.negada { background-color: #ffebee !important; }
+    tr.nao-localizada { background-color: #fff8e1 !important; }
+    
     .stats-container {
       display: flex;
       gap: 20px;
@@ -349,7 +354,7 @@
         <ul>
           <li>Cole múltiplos objetos JSON, um por linha, no campo abaixo</li>
           <li>O sistema irá consolidar todos em um único JSON unificado</li>
-          <li>Os arrays <code>ticketUuidList</code> e <code>idClienteList</code> serão combinados</li>
+          <li>Os arrays <code>ticketUuidList</code> e <code>idClienteList</code> serão combinados (aceita tanto arrays quanto strings individuais)</li>
           <li>Os valores de <code>retornaXML</code> e <code>retornaPDF</code> serão mantidos do último JSON</li>
         </ul>
       </div>
@@ -357,9 +362,12 @@
       <h3><i class="fas fa-paste"></i> Cole seus JSONs individuais:</h3>
       <textarea id="inputJsonTransform" placeholder="Exemplo:
 { \"ticketUuidList\": [\"123\"], \"idClienteList\": [\"456\"], \"retornaXML\": \"true\" }
-{ \"ticketUuidList\": [\"789\"], \"idClienteList\": [\"101\"], \"retornaPDF\": \"false\" }"></textarea>
+{ \"ticketUuidList\": [\"789\"], \"idClienteList\": [\"101\"], \"retornaPDF\": \"false\" }
+{ \"ticketUuidList\": \"abc\", \"idClienteList\": \"def\", \"retornaXML\": \"false\" }"></textarea>
       
       <div class="button-group">
+        <button id="loadFileBtnTransform" class="btn-info"><i class="fas fa-file-upload"></i> Carregar Arquivo</button>
+        <input type="file" id="fileInputTransform" accept=".json,.txt" style="display: none;">
         <button id="transformBtn" class="btn-success"><i class="fas fa-magic"></i> Consolidar JSON</button>
         <button class="btn-danger" onclick="clearTransform()"><i class="fas fa-trash-alt"></i> Limpar</button>
       </div>
@@ -374,7 +382,7 @@
       </div>
     </div>
 
-     <!-- Página de Extrair Dados -->
+    <!-- Página de Extrair Dados -->
     <div id="extrair-page" class="page">
       <div class="instructions">
         <h4><i class="fas fa-info-circle"></i> Como usar:</h4>
@@ -397,12 +405,20 @@
 {
   \"nfse\": [
     {
-      \"status\": \"NEGADA\",
+      \"status\": \"AUTORIZADA\",
       \"chaveAcesso\": \"1234\",
       \"nrRps\": \"5678\",
-      \"motivo\": \"Erro na emissão\",
+      \"motivo\": \"\",
       \"idCliente\": \"901\",
       \"ticketUuid\": \"abcd\"
+    },
+    {
+      \"status\": \"NEGADA\",
+      \"chaveAcesso\": \"4321\",
+      \"nrRps\": \"8765\",
+      \"motivo\": \"Erro na emissão\",
+      \"idCliente\": \"902\",
+      \"ticketUuid\": \"dcba\"
     }
   ]
 }"></textarea>
@@ -483,7 +499,7 @@
     showNotification('Texto copiado para a área de transferência!');
   }
 
-  // Transformar JSON
+  // Transformar JSON - FORMATO EXATO SOLICITADO
   document.getElementById('transformBtn').addEventListener('click', function() {
     const inputText = document.getElementById('inputJsonTransform').value.trim();
     if (!inputText) {
@@ -505,24 +521,89 @@
       jsonLines.forEach(line => {
         try {
           const obj = JSON.parse(line.trim());
-          if (obj.ticketUuidList) consolidated.ticketUuidList.push(...obj.ticketUuidList);
-          if (obj.idClienteList) consolidated.idClienteList.push(...obj.idClienteList);
+          
+          // Processa ticketUuidList (pode ser array ou string)
+          if (obj.ticketUuidList) {
+            if (Array.isArray(obj.ticketUuidList)) {
+              consolidated.ticketUuidList.push(...obj.ticketUuidList);
+            } else {
+              consolidated.ticketUuidList.push(obj.ticketUuidList.toString());
+            }
+          }
+          
+          // Processa idClienteList (pode ser array ou string)
+          if (obj.idClienteList) {
+            if (Array.isArray(obj.idClienteList)) {
+              consolidated.idClienteList.push(...obj.idClienteList);
+            } else {
+              consolidated.idClienteList.push(obj.idClienteList.toString());
+            }
+          }
+          
+          // Mantém os últimos valores de retornaXML e retornaPDF
           if (obj.retornaXML !== undefined) consolidated.retornaXML = obj.retornaXML.toString();
           if (obj.retornaPDF !== undefined) consolidated.retornaPDF = obj.retornaPDF.toString();
+          
           processedCount++;
         } catch (e) {
           console.error('Erro ao processar linha:', line, e);
         }
       });
       
+      // Remove duplicados
+      consolidated.ticketUuidList = [...new Set(consolidated.ticketUuidList)];
+      consolidated.idClienteList = [...new Set(consolidated.idClienteList)];
+      
+      // Formata o JSON exatamente como solicitado
+      const formattedJson = 
+`{"ticketUuidList" :\n[  \n${
+  consolidated.ticketUuidList.map(item => `"${item}"`).join(",\n")
+}\n]\n,"idClienteList" :  \n[\n${
+  consolidated.idClienteList.map(item => `"${item}"`).join(",\n")
+}\n],\n"retornaXML" : "${consolidated.retornaXML}",\n"retornaPDF" : "${consolidated.retornaPDF}"\n}`;
+      
       const resultArea = document.getElementById('outputJsonTransform');
-      resultArea.value = JSON.stringify(consolidated, null, 2);
+      resultArea.value = formattedJson;
       document.getElementById('transformResult').style.display = 'block';
       
       showNotification(`${processedCount} JSONs consolidados com sucesso! ${jsonLines.length - processedCount} com erro.`);
     } catch (e) {
       showNotification('Erro ao processar JSONs: ' + e.message, 'error');
       console.error(e);
+    }
+  });
+
+  // Carregar arquivo para transformação
+  document.getElementById('loadFileBtnTransform').addEventListener('click', function() {
+    document.getElementById('fileInputTransform').click();
+  });
+
+  document.getElementById('fileInputTransform').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const content = e.target.result;
+        // Valida se o conteúdo é JSON válido
+        JSON.parse(content);
+        document.getElementById('inputJsonTransform').value = content;
+        showNotification('Arquivo carregado com sucesso!');
+      } catch (error) {
+        // Se não for JSON válido, tenta tratar como múltiplos JSONs (um por linha)
+        document.getElementById('inputJsonTransform').value = content;
+        showNotification('Arquivo carregado. Verifique o conteúdo antes de consolidar.', 'info');
+      }
+    };
+    reader.onerror = function() {
+      showNotification('Erro ao ler o arquivo.', 'error');
+    };
+    
+    if (file.name.endsWith('.json') || file.name.endsWith('.txt')) {
+      reader.readAsText(file);
+    } else {
+      showNotification('Por favor, selecione um arquivo .json ou .txt', 'error');
     }
   });
 
@@ -549,6 +630,7 @@
   function clearTransform() {
     document.getElementById('inputJsonTransform').value = '';
     document.getElementById('outputJsonTransform').value = '';
+    document.getElementById('fileInputTransform').value = '';
     document.getElementById('transformResult').style.display = 'none';
     showNotification('Campos limpos com sucesso!', 'info');
   }
@@ -581,7 +663,7 @@
         <th>Ticket UUID</th>
       </tr></thead><tbody>`;
       
-      let negadas = 0, naoLocalizadas = 0, outras = 0;
+      let autorizadas = 0, negadas = 0, naoLocalizadas = 0, outras = 0;
       const statusCounts = {};
 
       nfseList.forEach(item => {
@@ -595,13 +677,15 @@
         // Contagem de status
         statusCounts[status] = (statusCounts[status] || 0) + 1;
         
-        if (status === 'NEGADA') negadas++;
+        if (status === 'AUTORIZADA') autorizadas++;
+        else if (status === 'NEGADA') negadas++;
         else if (status === 'NAO_LOCALIZADA') naoLocalizadas++;
         else outras++;
         
         // Adiciona classe CSS baseada no status para colorir a linha
         let rowClass = '';
-        if (status === 'NEGADA') rowClass = 'class="negada"';
+        if (status === 'AUTORIZADA') rowClass = 'class="autorizada"';
+        else if (status === 'NEGADA') rowClass = 'class="negada"';
         else if (status === 'NAO_LOCALIZADA') rowClass = 'class="nao-localizada"';
         
         tableHtml += `<tr ${rowClass}>
@@ -616,15 +700,6 @@
       
       tableHtml += `</tbody></table>`;
       
-      // Adiciona estilo para colorir as linhas
-      const style = document.createElement('style');
-      style.textContent = `
-        tr.negada { background-color: #ffebee !important; }
-        tr.nao-localizada { background-color: #fff8e1 !important; }
-        tr:hover { background-color: #e3f2fd !important; }
-      `;
-      document.head.appendChild(style);
-      
       document.getElementById('resultTable').innerHTML = tableHtml;
       
       // Estatísticas detalhadas
@@ -632,6 +707,10 @@
         <div class="stat-card">
           <h4>Total</h4>
           <p>${nfseList.length}</p>
+        </div>
+        <div class="stat-card">
+          <h4>AUTORIZADA</h4>
+          <p>${autorizadas}</p>
         </div>
         <div class="stat-card">
           <h4>NEGADA</h4>
@@ -657,10 +736,42 @@
 
   function clearExtract() {
     document.getElementById('inputJsonExtract').value = '';
+    document.getElementById('fileInput').value = '';
     document.getElementById('resultStats').innerHTML = '';
     document.getElementById('resultTable').innerHTML = '';
     showNotification('Campos limpos com sucesso!', 'info');
   }
+
+  document.getElementById('loadFileBtn').addEventListener('click', function() {
+    document.getElementById('fileInput').click();
+  });
+
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const content = e.target.result;
+        // Tenta parsear como JSON para validar
+        JSON.parse(content);
+        document.getElementById('inputJsonExtract').value = content;
+        showNotification('Arquivo carregado com sucesso!');
+      } catch (error) {
+        showNotification('Erro: O arquivo não contém um JSON válido.', 'error');
+      }
+    };
+    reader.onerror = function() {
+      showNotification('Erro ao ler o arquivo.', 'error');
+    };
+    
+    if (file.name.endsWith('.json') || file.name.endsWith('.txt')) {
+      reader.readAsText(file);
+    } else {
+      showNotification('Por favor, selecione um arquivo .json ou .txt', 'error');
+    }
+  });
 
   document.getElementById('copyTableBtn').addEventListener('click', function() {
     const table = document.getElementById('resultTable').querySelector('table');
@@ -721,37 +832,6 @@
     
     showNotification(`Arquivo ${filename} baixado com sucesso!`);
   }
-  // Adicionar funcionalidade de carregar arquivo
-  document.getElementById('loadFileBtn').addEventListener('click', function() {
-    document.getElementById('fileInput').click();
-  });
-
-  document.getElementById('fileInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        const content = e.target.result;
-        // Tenta parsear como JSON para validar
-        JSON.parse(content);
-        document.getElementById('inputJsonExtract').value = content;
-        showNotification('Arquivo carregado com sucesso!');
-      } catch (error) {
-        showNotification('Erro: O arquivo não contém um JSON válido.', 'error');
-      }
-    };
-    reader.onerror = function() {
-      showNotification('Erro ao ler o arquivo.', 'error');
-    };
-    
-    if (file.name.endsWith('.json') || file.name.endsWith('.txt')) {
-      reader.readAsText(file);
-    } else {
-      showNotification('Por favor, selecione um arquivo .json ou .txt', 'error');
-    }
-  });
 </script>
 
 </body>
