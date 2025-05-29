@@ -360,10 +360,12 @@
       </div>
       
       <h3><i class="fas fa-paste"></i> Cole seus JSONs individuais:</h3>
-      <textarea id="inputJsonTransform" placeholder="Exemplo:
-{ \"ticketUuidList\": [\"123\"], \"idClienteList\": [\"456\"], \"retornaXML\": \"true\" }
-{ \"ticketUuidList\": [\"789\"], \"idClienteList\": [\"101\"], \"retornaPDF\": \"false\" }
-{ \"ticketUuidList\": \"abc\", \"idClienteList\": \"def\", \"retornaXML\": \"false\" }"></textarea>
+      <textarea id="inputJsonTransform" placeholder="Exemplo de formatação reconhecida:
+{&quot;ticketUuidList&quot; :  &quot;f7b8b845-e348-496a-ad42-bdbe78badf5c&quot; ,&quot;idClienteList&quot; :  &quot;18240000196722&quot; ,&quot;retornaXML&quot; : true,&quot;retornaPDF&quot; : false}
+
+ou
+
+{&quot;ticketUuidList&quot; : [ &quot;01452a8f-1a5c-4627-bf54-bb9919a977a9&quot; ],&quot;idClienteList&quot; : [ &quot;18131501502623&quot; ],&quot;retornaXML&quot; : true,&quot;retornaPDF&quot; : false}"></textarea>
       
       <div class="button-group">
         <button id="loadFileBtnTransform" class="btn-info"><i class="fas fa-file-upload"></i> Carregar Arquivo</button>
@@ -394,38 +396,19 @@
         </ul>
       </div>
       
-      <h3><i class="fas fa-paste"></i> Cole o JSON consolidado ou carregue um arquivo:</h3>
+      <h3><i class="fas fa-paste"></i> Cole o JSON consolidado no campo abaixo, ou carregue um arquivo:</h3>
       
       <div class="button-group" style="margin-bottom: 15px;">
         <button id="loadFileBtn" class="btn-info"><i class="fas fa-file-upload"></i> Carregar Arquivo</button>
         <input type="file" id="fileInput" accept=".json,.txt" style="display: none;">
       </div>
-      
-      <textarea id="inputJsonExtract" placeholder="Exemplo:
-{
-  \"nfse\": [
-    {
-      \"status\": \"AUTORIZADA\",
-      \"chaveAcesso\": \"1234\",
-      \"nrRps\": \"5678\",
-      \"motivo\": \"\",
-      \"idCliente\": \"901\",
-      \"ticketUuid\": \"abcd\"
-    },
-    {
-      \"status\": \"NEGADA\",
-      \"chaveAcesso\": \"4321\",
-      \"nrRps\": \"8765\",
-      \"motivo\": \"Erro na emissão\",
-      \"idCliente\": \"902\",
-      \"ticketUuid\": \"dcba\"
-    }
-  ]
-}"></textarea>
+	  <textarea id="inputJsonExtract" placeholder="Cole o JSON aqui, ou carregue pelo botão &quot;Carregar Arquivo&quot;!
+"></textarea>
       
       <div class="button-group">
         <button id="extractBtn" class="btn-success"><i class="fas fa-table"></i> Extrair Dados</button>
         <button class="btn-danger" onclick="clearExtract()"><i class="fas fa-trash-alt"></i> Limpar</button>
+		<button title="Clique no botão para copiar um exemplo JSON" id="copiarExemploBtn">Copiar Exemplo JSON</button>
       </div>
       
       <div class="result-container">
@@ -445,7 +428,7 @@
               <option value="|">Pipe (|)</option>
               <option value="\t">Tabulação (\t)</option>
             </select>
-            <span class="tooltiptext">Escolha o separador para arquivos de texto</span>
+            <span class="tooltiptext">Escolha o separador para arquivos de saída .txt</span>
           </div>
           
           <button class="btn-warning" id="exportTxtBtn"><i class="fas fa-file-alt"></i> Exportar TXT</button>
@@ -503,7 +486,7 @@
   document.getElementById('transformBtn').addEventListener('click', function() {
     const inputText = document.getElementById('inputJsonTransform').value.trim();
     if (!inputText) {
-      showNotification('Por favor, cole alguns JSONs.', 'error');
+      showNotification('Nenhum JSON informado, por favor cole algum JSON!', 'error');
       return;
     }
     
@@ -639,7 +622,7 @@
   document.getElementById('extractBtn').addEventListener('click', function() {
     const inputText = document.getElementById('inputJsonExtract').value.trim();
     if (!inputText) {
-      showNotification('Por favor, cole o JSON.', 'error');
+      showNotification('Nenhum JSON informado, por favor cole, ou carregue algum JSON!', 'error');
       return;
     }
     
@@ -832,6 +815,28 @@
     
     showNotification(`Arquivo ${filename} baixado com sucesso!`);
   }
+  document.getElementById('copiarExemploBtn').addEventListener('click', function() {
+            const exemploTexto = `{"ticketUuidList" :
+
+[  
+"d2dc94b5-5455-4ba3-a62a-a7930f84b583",
+"f7b8b845-e348-496a-ad42-bdbe78badf5c"
+]
+
+,"idClienteList" :  
+[
+"18131501598819",
+"18240000196722" 
+]
+
+,"retornaXML" : "true","retornaPDF" : "false"}`;
+            navigator.clipboard.writeText(exemploTexto).then(function() {
+                alert('Exemplo copiado para a área de transferência!');
+            }).catch(function(err) {
+                console.error('Erro ao copiar: ', err);
+                alert('Falha ao copiar o exemplo.');
+            });
+        });
 </script>
 
 </body>
