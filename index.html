@@ -402,13 +402,13 @@ ou
         <button id="loadFileBtn" class="btn-info"><i class="fas fa-file-upload"></i> Carregar Arquivo</button>
         <input type="file" id="fileInput" accept=".json,.txt" style="display: none;">
       </div>
-	  <textarea id="inputJsonExtract" placeholder="Cole o JSON aqui, ou carregue pelo botão &quot;Carregar Arquivo&quot;!
+      <textarea id="inputJsonExtract" placeholder="Cole o JSON aqui, ou carregue pelo botão &quot;Carregar Arquivo&quot;!
 "></textarea>
       
       <div class="button-group">
         <button id="extractBtn" class="btn-success"><i class="fas fa-table"></i> Extrair Dados</button>
         <button class="btn-danger" onclick="clearExtract()"><i class="fas fa-trash-alt"></i> Limpar</button>
-		<button title="Clique no botão para copiar um exemplo JSON" id="copiarExemploBtn">Copiar Exemplo JSON</button>
+        <button title="Clique no botão para copiar um exemplo JSON" id="copiarExemploBtn">Copiar Exemplo JSON</button>
       </div>
       
       <div class="result-container">
@@ -556,7 +556,7 @@ ou
     }
   });
 
-  // Carregar arquivo para transformação
+  // Carregar arquivo para transformação - CORRIGIDO
   document.getElementById('loadFileBtnTransform').addEventListener('click', function() {
     document.getElementById('fileInputTransform').click();
   });
@@ -567,27 +567,13 @@ ou
 
     const reader = new FileReader();
     reader.onload = function(e) {
-      try {
-        const content = e.target.result;
-        // Valida se o conteúdo é JSON válido
-        JSON.parse(content);
-        document.getElementById('inputJsonTransform').value = content;
-        showNotification('Arquivo carregado com sucesso!');
-      } catch (error) {
-        // Se não for JSON válido, tenta tratar como múltiplos JSONs (um por linha)
-        document.getElementById('inputJsonTransform').value = content;
-        showNotification('Arquivo carregado. Verifique o conteúdo antes de consolidar.', 'info');
-      }
+      document.getElementById('inputJsonTransform').value = e.target.result;
+      showNotification('Arquivo carregado com sucesso!');
     };
     reader.onerror = function() {
       showNotification('Erro ao ler o arquivo.', 'error');
     };
-    
-    if (file.name.endsWith('.json') || file.name.endsWith('.txt')) {
-      reader.readAsText(file);
-    } else {
-      showNotification('Por favor, selecione um arquivo .json ou .txt', 'error');
-    }
+    reader.readAsText(file);
   });
 
   function downloadJson() {
@@ -725,6 +711,7 @@ ou
     showNotification('Campos limpos com sucesso!', 'info');
   }
 
+  // Carregar arquivo para extração - CORRIGIDO
   document.getElementById('loadFileBtn').addEventListener('click', function() {
     document.getElementById('fileInput').click();
   });
@@ -735,25 +722,13 @@ ou
 
     const reader = new FileReader();
     reader.onload = function(e) {
-      try {
-        const content = e.target.result;
-        // Tenta parsear como JSON para validar
-        JSON.parse(content);
-        document.getElementById('inputJsonExtract').value = content;
-        showNotification('Arquivo carregado com sucesso!');
-      } catch (error) {
-        showNotification('Erro: O arquivo não contém um JSON válido.', 'error');
-      }
+      document.getElementById('inputJsonExtract').value = e.target.result;
+      showNotification('Arquivo carregado com sucesso!');
     };
     reader.onerror = function() {
       showNotification('Erro ao ler o arquivo.', 'error');
     };
-    
-    if (file.name.endsWith('.json') || file.name.endsWith('.txt')) {
-      reader.readAsText(file);
-    } else {
-      showNotification('Por favor, selecione um arquivo .json ou .txt', 'error');
-    }
+    reader.readAsText(file);
   });
 
   document.getElementById('copyTableBtn').addEventListener('click', function() {
@@ -815,8 +790,9 @@ ou
     
     showNotification(`Arquivo ${filename} baixado com sucesso!`);
   }
+  
   document.getElementById('copiarExemploBtn').addEventListener('click', function() {
-            const exemploTexto = `{"ticketUuidList" :
+    const exemploTexto = `{"ticketUuidList" :
 
 [  
 "d2dc94b5-5455-4ba3-a62a-a7930f84b583",
@@ -830,13 +806,13 @@ ou
 ]
 
 ,"retornaXML" : "true","retornaPDF" : "false"}`;
-            navigator.clipboard.writeText(exemploTexto).then(function() {
-                alert('Exemplo copiado para a área de transferência!');
-            }).catch(function(err) {
-                console.error('Erro ao copiar: ', err);
-                alert('Falha ao copiar o exemplo.');
-            });
-        });
+    navigator.clipboard.writeText(exemploTexto).then(function() {
+        alert('Exemplo copiado para a área de transferência!');
+    }).catch(function(err) {
+        console.error('Erro ao copiar: ', err);
+        alert('Falha ao copiar o exemplo.');
+    });
+  });
 </script>
 
 </body>
