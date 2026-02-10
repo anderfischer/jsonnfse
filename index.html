@@ -606,102 +606,108 @@ ou
 
   // Extrair Dados
   document.getElementById('extractBtn').addEventListener('click', function() {
-    const inputText = document.getElementById('inputJsonExtract').value.trim();
-    if (!inputText) {
-      showNotification('Nenhum JSON informado, por favor cole, ou carregue algum JSON!', 'error');
+  const inputText = document.getElementById('inputJsonExtract').value.trim();
+  if (!inputText) {
+    showNotification('Nenhum JSON informado, por favor cole, ou carregue algum JSON!', 'error');
+    return;
+  }
+  
+  try {
+    const data = JSON.parse(inputText);
+    const nfseList = data.nfse || [];
+    
+    if (nfseList.length === 0) {
+      showNotification('O JSON não contém dados na propriedade "nfse".', 'info');
+      document.getElementById('resultStats').innerHTML = '';
+      document.getElementById('resultTable').innerHTML = '';
       return;
     }
     
-    try {
-      const data = JSON.parse(inputText);
-      const nfseList = data.nfse || [];
-      
-      if (nfseList.length === 0) {
-        showNotification('O JSON não contém dados na propriedade "nfse".', 'info');
-        document.getElementById('resultStats').innerHTML = '';
-        document.getElementById('resultTable').innerHTML = '';
-        return;
-      }
-      
-      let tableHtml = `<table><thead><tr>
-        <th>Status</th>
-        <th>Chave de Acesso</th>
-        <th>Número RPS</th>
-        <th>Motivo</th>
-        <th>ID Cliente</th>
-        <th>Ticket UUID</th>
-      </tr></thead><tbody>`;
-      
-      let autorizadas = 0, negadas = 0, naoLocalizadas = 0, outras = 0;
-      const statusCounts = {};
+    let tableHtml = `<table><thead><tr>
+      <th>Status</th>
+      <th>Chave de Acesso</th>
+      <th>Número RPS</th>
+      <th>Motivo</th>
+      <th>ID Cliente</th>
+      <th>Ticket UUID</th>
+    </tr></thead><tbody>`;
+    
+    let autorizadas = 0, negadas = 0, naoLocalizadas = 0, canceladas = 0, outras = 0;
+    const statusCounts = {};
 
-      nfseList.forEach(item => {
-        const status = item.status || 'N/A';
-        const chave = item.chaveAcesso || 'N/A';
-        const rps = item.nrRps || 'N/A';
-        const motivo = item.motivo ? item.motivo.replace(/\r\n/g, ' ').substring(0, 100) + (item.motivo.length > 100 ? '...' : '') : 'N/A';
-        const cliente = item.idCliente || 'N/A';
-        const ticket = item.ticketUuid || 'N/A';
-        
-        // Contagem de status
-        statusCounts[status] = (statusCounts[status] || 0) + 1;
-        
-        if (status === 'AUTORIZADA') autorizadas++;
-        else if (status === 'NEGADA') negadas++;
-        else if (status === 'NAO_LOCALIZADA') naoLocalizadas++;
-        else outras++;
-        
-        // Adiciona classe CSS baseada no status para colorir a linha
-        let rowClass = '';
-        if (status === 'AUTORIZADA') rowClass = 'class="autorizada"';
-        else if (status === 'NEGADA') rowClass = 'class="negada"';
-        else if (status === 'NAO_LOCALIZADA') rowClass = 'class="nao-localizada"';
-        
-        tableHtml += `<tr ${rowClass}>
-          <td>${status}</td>
-          <td>${chave}</td>
-          <td>${rps}</td>
-          <td title="${item.motivo || ''}">${motivo}</td>
-          <td>${cliente}</td>
-          <td>${ticket}</td>
-        </tr>`;
-      });
+    nfseList.forEach(item => {
+      const status = item.status || 'N/A';
+      const chave = item.chaveAcesso || 'N/A';
+      const rps = item.nrRps || 'N/A';
+      const motivo = item.motivo ? item.motivo.replace(/\r\n/g, ' ').substring(0, 100) + (item.motivo.length > 100 ? '...' : '') : 'N/A';
+      const cliente = item.idCliente || 'N/A';
+      const ticket = item.ticketUuid || 'N/A';
       
-      tableHtml += `</tbody></table>`;
+      // Contagem de status
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
       
-      document.getElementById('resultTable').innerHTML = tableHtml;
+      if (status === 'AUTORIZADA') autorizadas++;
+      else if (status === 'NEGADA') negadas++;
+      else if (status === 'NAO_LOCALIZADA') naoLocalizadas++;
+      else if (status === 'CANCELADA' || status === 'CANCELADO') canceladas++;
+      else outras++;
       
-      // Estatísticas detalhadas
-      let statsHtml = `
-        <div class="stat-card">
-          <h4>Total</h4>
-          <p>${nfseList.length}</p>
-        </div>
-        <div class="stat-card">
-          <h4>AUTORIZADA</h4>
-          <p>${autorizadas}</p>
-        </div>
-        <div class="stat-card">
-          <h4>NEGADA</h4>
-          <p>${negadas}</p>
-        </div>
-        <div class="stat-card">
-          <h4>NÃO LOCALIZADA</h4>
-          <p>${naoLocalizadas}</p>
-        </div>
-        <div class="stat-card">
-          <h4>OUTRAS</h4>
-          <p>${outras}</p>
-        </div>
-      `;
+      // Adiciona classe CSS baseada no status para colorir a linha
+      let rowClass = '';
+      if (status === 'AUTORIZADA') rowClass = 'class="autorizada"';
+      else if (status === 'NEGADA') rowClass = 'class="negada"';
+      else if (status === 'NAO_LOCALIZADA') rowClass = 'class="nao-localizada"';
+      else if (status === 'CANCELADA' || status === 'CANCELADO') rowClass = 'class="cancelada"';
       
-      document.getElementById('resultStats').innerHTML = statsHtml;
-      showNotification(`${nfseList.length} registros extraídos com sucesso!`);
-    } catch (e) {
-      showNotification('Erro ao processar JSON: ' + e.message, 'error');
-      console.error(e);
-    }
-  });
+      tableHtml += `<tr ${rowClass}>
+        <td>${status}</td>
+        <td>${chave}</td>
+        <td>${rps}</td>
+        <td title="${item.motivo || ''}">${motivo}</td>
+        <td>${cliente}</td>
+        <td>${ticket}</td>
+      </tr>`;
+    });
+    
+    tableHtml += `</tbody></table>`;
+    
+    document.getElementById('resultTable').innerHTML = tableHtml;
+    
+    // Estatísticas detalhadas
+    let statsHtml = `
+      <div class="stat-card">
+        <h4>Total</h4>
+        <p>${nfseList.length}</p>
+      </div>
+      <div class="stat-card">
+        <h4>AUTORIZADA</h4>
+        <p>${autorizadas}</p>
+      </div>
+      <div class="stat-card">
+        <h4>NEGADA</h4>
+        <p>${negadas}</p>
+      </div>
+      <div class="stat-card">
+        <h4>NÃO LOCALIZADA</h4>
+        <p>${naoLocalizadas}</p>
+      </div>
+      <div class="stat-card">
+        <h4>CANCELADA</h4>
+        <p>${canceladas}</p>
+      </div>
+      <div class="stat-card">
+        <h4>OUTRAS</h4>
+        <p>${outras}</p>
+      </div>
+    `;
+    
+    document.getElementById('resultStats').innerHTML = statsHtml;
+    showNotification(`${nfseList.length} registros extraídos com sucesso!`);
+  } catch (e) {
+    showNotification('Erro ao processar JSON: ' + e.message, 'error');
+    console.error(e);
+  }
+});
 
   function clearExtract() {
     document.getElementById('inputJsonExtract').value = '';
