@@ -9,10 +9,10 @@
   <style>
     :root {
       --primary-color: #2c3e50;
-      --secondary-color: #3498db;
+      --secondary-color: #0a7e92;
       --success-color: #27ae60;
-      --warning-color: #f39c12;
-      --danger-color: #e74c3c;
+      --warning-color: #4e4c4b;
+      --danger-color: #fa1e05;
       --light-color: #ecf0f1;
       --dark-color: #34495e;
     }
@@ -22,14 +22,14 @@
       line-height: 1.6;
       margin: 0;
       padding: 20px;
-      background-color: #f5f7fa;
+      background-color: #09707e;
       color: #333;
     }
     
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      background-color: white;
+      background-color: rgba(41, 192, 219, 0.986);
       padding: 30px;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -131,6 +131,7 @@
     button:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      background-color: var(--primary-color);
     }
     
     button:active {
@@ -141,17 +142,17 @@
       font-size: 16px;
     }
     
-    .btn-success { background-color: var(--success-color); }
-    .btn-success:hover { background-color: #219653; }
+    .btn-success { background-color: #033f47a2; }
+    .btn-success:hover { background-color: #033f47; }
     
-    .btn-info { background-color: var(--secondary-color); }
-    .btn-info:hover { background-color: #2980b9; }
+    .btn-info { background-color: var(#033f47a2); }
+    .btn-info:hover { background-color: #033f47; }
     
     .btn-warning { background-color: var(--warning-color); }
-    .btn-warning:hover { background-color: #e67e22; }
+    .btn-warning:hover { background-color: #422b06ef; }
     
-    .btn-danger { background-color: var(--danger-color); }
-    .btn-danger:hover { background-color: #c0392b; }
+    .btn-danger { background-color: #dd3b3bec; }
+    .btn-danger:hover { background-color: var(--danger-color); }
     
     .result-container {
       margin-top: 30px;
@@ -406,9 +407,9 @@ ou
 "></textarea>
       
       <div class="button-group">
-        <button id="extractBtn" class="btn-success"><i class="fas fa-table"></i> Extrair Dados</button>
-        <button class="btn-danger" onclick="clearExtract()"><i class="fas fa-trash-alt"></i> Limpar</button>
+        <button id="extractBtn" class="btn-success"><i class="fas fa-table"></i> Extrair Dados</button>        
         <button title="Clique no botão para copiar um exemplo JSON" id="copiarExemploBtn">Copiar Exemplo JSON</button>
+        <button class="btn-danger" onclick="clearExtract()"><i class="fas fa-trash-alt"></i> Limpar</button>
       </div>
       
       <div class="result-container">
